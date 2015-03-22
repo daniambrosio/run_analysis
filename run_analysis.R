@@ -26,10 +26,10 @@
 # Paths used during processing
 #
 wd = "./data"
-zipFile = paste(wd,"projectdata.zip",sep="/")
-dirData = paste(wd,"UCI HAR Dataset",sep="/")
-testDir = paste(dirData,"test",sep="/")
-trainDir = paste(dirData,"train",sep="/")
+zipFile <- paste(wd,"projectdata.zip",sep="/")
+dirData <- paste(wd,"UCI HAR Dataset",sep="/")
+testDir <- paste(dirData,"test",sep="/")
+trainDir <- paste(dirData,"train",sep="/")
 
 #
 # Get the remote data into a working data folder and unzip it
@@ -51,33 +51,44 @@ if(!file.exists(dirData)) {
 }
 
 
-#
+########################################################################
 # 1 - Merges the training and the test sets to create one data set.
-#
+########################################################################
 # read and combine the subject data
-print("Merging subject data...")
-subject_test = read.table(paste(testDir,"subject_test.txt",sep="/"))
-subject_train = read.table(paste(trainDir,"subject_train.txt",sep="/"))
-subject_merged = rbind(subject_test,subject_train)
+print("Step 1 - Merging subject data...")
+subject_test <- read.table(paste(testDir,"subject_test.txt",sep="/"))
+subject_train <- read.table(paste(trainDir,"subject_train.txt",sep="/"))
+subject_merged <- rbind(subject_test,subject_train)
+# read and combine the y data
+print("Step 1 - Merging y data...")
+y_test <- read.table(paste(testDir,"y_test.txt",sep="/"))
+y_train <- read.table(paste(trainDir,"y_train.txt",sep="/"))
+y_merged <- rbind(y_test,y_train)
 # read and combine the X data
-print("Merging X data...")
+print("Step 1 - Merging X data...")
 X_test = read.table(paste(testDir,"X_test.txt",sep="/"))
 X_train = read.table(paste(trainDir,"X_train.txt",sep="/"))
 X_merged = rbind(X_test,X_train)
-# read and combine the y data
-print("Merging y data...")
-y_test = read.table(paste(testDir,"y_test.txt",sep="/"))
-y_train = read.table(paste(trainDir,"y_train.txt",sep="/"))
-y_merged = rbind(y_test,y_train)
+
+########################################################################
+# 3 - Uses descriptive activity names to name the activities in the data set
+########################################################################
+print("Step 3 - Change y values to Label...")
+labels <- read.table(paste(dirData,"activity_labels.txt",sep="/"))
+y_merged <- merge(y_merged,labels,by.y="V1",sort=FALSE)
+
+########################################################################
+# 4 - Appropriately labels the data set with descriptive variable names. 
+########################################################################
 # set the column names for the merged files
+print("Step 4 - Rename and merge study data...")
 colnames(subject_merged) <- c("subject")
 colnames(y_merged) <- c("labels")
-features = read.table(paste(dirData,"features.txt",sep="/"))
+features <- read.table(paste(dirData,"features.txt",sep="/"))
 colnames(X_merged) <- c(as.character(features[,2]))
+# prepare final merged data, including test and train data
+study_data <- cbind(subject_merged, y_merged, X_merged)
 
-#reading and filtering features (only "mean" and "std" features)
-#file = paste(dirData, "features.txt", sep="/")
-#features <- read.table(file, sep=" ")
-#filtered_features_indexes <- (grepl("mean\\(\\)", features[,2]) | grepl("std\\(\\)", features[,2]))
-#filtered_features_names <- as.character(features[filtered_features_indexes,2])
-
+########################################################################
+# 2 - Extracts only the measurements on the mean and standard deviation for each measurement. 
+########################################################################
