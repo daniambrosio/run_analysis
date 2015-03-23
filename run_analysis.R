@@ -22,6 +22,9 @@
 # 5 - From the data set in step 4, creates a second, independent tidy data 
 #     set with the average of each variable for each activity and each subject.
 
+# Libraries needed for this script
+library(reshape2)
+
 #
 # Paths used during processing
 #
@@ -37,7 +40,7 @@ trainDir <- paste(dirData,"train",sep="/")
 if(!file.exists(wd)) {dir.create(wd)}
 if(!file.exists(zipFile)) {
     print("downloading zip file...")
-    zipFileURL = "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
+    zipFileURL <- "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
     download.file(zipFileURL, destfile=zipFile, method="curl")    
 } else {
     print("zip file found - no need to download again")
@@ -83,12 +86,28 @@ y_merged <- merge(y_merged,labels,by.y="V1",sort=FALSE)
 # set the column names for the merged files
 print("Step 4 - Rename and merge study data...")
 colnames(subject_merged) <- c("subject")
-colnames(y_merged) <- c("labels")
+colnames(y_merged) <- c("int_label","activity")
 features <- read.table(paste(dirData,"features.txt",sep="/"))
 colnames(X_merged) <- c(as.character(features[,2]))
 # prepare final merged data, including test and train data
-study_data <- cbind(subject_merged, y_merged, X_merged)
+study_data <- cbind(subject_merged, y_merged$activity, X_merged)
+colnames(study_data)[2] <- "activity" # why did it not bind the col name also?
 
 ########################################################################
 # 2 - Extracts only the measurements on the mean and standard deviation for each measurement. 
 ########################################################################
+print("Step 2 - Extracting std and mean data only from X...")
+std_index <- grep("std",features[,2])
+mean_index <- grep("mean()",features[,2],fixed=TRUE) # eliminates meanFreq()
+filter_index <- sort(c(std_index,mean_index))
+mean_and_std_data <- cbind(subject_merged, y_merged$activity,X_merged[filter_index])
+colnames(mean_and_std_data)[2] <- "activity" # why did it not bind the col name also?
+
+########################################################################
+# 5 - From the data set in step 4, creates a second, independent tidy data 
+#     set with the average of each variable for each activity and each subject.
+########################################################################
+print("Step 5 - Aggregating the data...")
+agg <- aggregate(study_data[,3:length(study_data)],list(study_data$subject),mean)
+write.table(agg,paste(dirData,"tidy_data.txt",sep="/"))
+
