@@ -78,7 +78,7 @@ X_merged = rbind(X_test,X_train)
 ########################################################################
 print("Step 3 - Change y values to Label...")
 labels <- read.table(paste(dirData,"activity_labels.txt",sep="/"))
-y_merged <- merge(y_merged,labels,by.y="V1",sort=FALSE)
+#y_merged <- merge(y_merged,labels,by.y="V1",sort=FALSE)
 
 ########################################################################
 # 4 - Appropriately labels the data set with descriptive variable names. 
@@ -86,12 +86,12 @@ y_merged <- merge(y_merged,labels,by.y="V1",sort=FALSE)
 # set the column names for the merged files
 print("Step 4 - Rename and merge study data...")
 colnames(subject_merged) <- c("subject")
-colnames(y_merged) <- c("int_label","activity")
+colnames(y_merged) <- c("activity")
 features <- read.table(paste(dirData,"features.txt",sep="/"))
 colnames(X_merged) <- c(as.character(features[,2]))
 # prepare final merged data, including test and train data
-study_data <- cbind(subject_merged, y_merged$activity, X_merged)
-colnames(study_data)[2] <- "activity" # why did it not bind the col name also?
+study_data <- cbind(subject_merged, y_merged, X_merged)
+#colnames(study_data)[2] <- "activity" # why did it not bind the col name also?
 
 ########################################################################
 # 2 - Extracts only the measurements on the mean and standard deviation for each measurement. 
@@ -100,14 +100,17 @@ print("Step 2 - Extracting std and mean data only from X...")
 std_index <- grep("std",features[,2])
 mean_index <- grep("mean()",features[,2],fixed=TRUE) # eliminates meanFreq()
 filter_index <- sort(c(std_index,mean_index))
-mean_and_std_data <- cbind(subject_merged, y_merged$activity,X_merged[filter_index])
-colnames(mean_and_std_data)[2] <- "activity" # why did it not bind the col name also?
+mean_and_std_data <- cbind(subject_merged, y_merged,X_merged[filter_index])
+#colnames(mean_and_std_data)[2] <- "activity" # why did it not bind the col name also?
 
 ########################################################################
 # 5 - From the data set in step 4, creates a second, independent tidy data 
 #     set with the average of each variable for each activity and each subject.
 ########################################################################
-print("Step 5 - Aggregating the data...")
-agg <- aggregate(study_data[,3:length(study_data)],list(study_data$subject),mean)
-write.table(agg,paste(dirData,"tidy_data.txt",sep="/"))
+print("Step 5 - Aggregating the data and saving to CSV file...")
+agg <- aggregate(study_data[,3:length(study_data)], by=list(study_data$subject,study_data$activity), FUN=mean)
+agg <- merge(agg,labels,by.y="V1",by.x="Group.2",sort=FALSE)
+agg$Group.2 <- agg$V2 # replace the number of activity by its name - label
+names(agg)[1:2]<-c("activity","subject")
+write.csv(agg,paste(dirData,"tidy_data.csv",sep="/"))
 

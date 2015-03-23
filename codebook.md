@@ -21,5 +21,5 @@ I now label all the columns with the names read from the features.txt file, maki
 Now I do extract only the mean and std columns from the large data set and store them in a new variable called "mean_and_std_data". Since the project made me confused whether the tidy data file (from step 5) should include all the data or only the mean and std, I decided to store them in different variables.
 
 ### Step 5:
-Aggregate the data and save the table to a tidy_data.txt file.
+Aggregate the data and save the table to a tidy_data.csv file.
 
