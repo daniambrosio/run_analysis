@@ -4,10 +4,13 @@
 The run_analysis.R script has all the code necessary to perform the transformations and calculations required by the project.
 The code is very well documented, explaining each step into building the data. More information about the strucure and rationale for the code can be found in the cookbook.md file in the root of the repository.
 
+<font color='red'>
 ## Note to the ones Evaluating the code:
 To the evaluation: I uploaded an incorrect txt file - the CSV file now under version control in github is the correct one.
 Please consider this one instead of the submitted txt file.
+</font>
 
+## About the code
 The code is built following the 5 steps specified in the Project, however not in the exact same order.
 
 ### Step 0:
